@@ -9,6 +9,7 @@ object SparkSqlPractice extends App with Context {
     .csv("src\\main\\resources\\question_tags_10K.csv")
     .toDF("id", "tag")
   dfTag.createOrReplaceTempView("so_tag")
-  sparkSession.catalog.listTables().show()
-  sparkSession.sql("show tables").show()
+  //sparkSession.catalog.listTables().show()
+  //sparkSession.sql("show tables").show()
+  sparkSession.sql("select id,tag from so_tag limit 20").show()
 }
