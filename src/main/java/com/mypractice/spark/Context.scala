@@ -1,6 +1,6 @@
 package com.mypractice.spark
 
-import org.apache.spark.SparkConf
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 
 trait Context {
@@ -13,4 +13,6 @@ trait Context {
     .builder()
     .config(sparkConf)
     .getOrCreate()
+
+  lazy val sparkContext: SparkContext = sparkSession.sparkContext
 }
