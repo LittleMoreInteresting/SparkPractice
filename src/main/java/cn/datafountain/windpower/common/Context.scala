@@ -29,25 +29,37 @@ trait Context {
       .csv(trainingDataFile)
       .toDF("WindNumber", "Time", "WindSpeed", "Power", "RotorSpeed")
       .cache()
-    /*frame.select(
-      frame.col("WindNumber").cast("integer"),
-      frame.col("Time").cast("String"),
-      frame.col("WindSpeed").cast("Double"),
-      frame.col("Power").cast("Double"),
-      frame.col("RotorSpeed").cast("Double")
-    )*/
-    addColumns(frame)
+    val frame1 = addColumns(frame)
+    frame1.select(
+      frame1.col("WindNumber").cast("integer"),
+      frame1.col("Timestamp").cast("Long"),
+      frame1.col("WindSpeed").cast("Double"),
+      frame1.col("Power").cast("Double"),
+      frame1.col("RotorSpeed").cast("Double")
+    )
   }
 
   def getParams():DataFrame = {
-     sparkSession.read
+    val frame = sparkSession.read
       .option("header", "true")
       .option("innerSchema", "true")
       .csv(parametersFile)
-      .toDF("WindNumber", "wd", "p","in","out","minSp","maxSp").cache()
+      .toDF("WindNumber", "wd", "p", "in", "out", "minSp", "maxSp")
+    frame.select(
+      frame.col("WindNumber").cast("integer"),
+      frame.col("wd").cast("Double"),
+      frame.col("p").cast("Double"),
+      frame.col("in").cast("Double"),
+      frame.col("out").cast("Double"),
+      frame.col("minSp").cast("Double"),
+      frame.col("maxSp").cast("Double")
+    )
   }
 
   def addColumns(frame:DataFrame): DataFrame ={
+    val Time2Log = (arg: String) => {
+     new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(arg).getTime
+    }
     val TimeSplitM  = (arg: String) => {
       val newTime :Long= new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(arg).getTime
       new SimpleDateFormat("MM").format(newTime)
@@ -58,8 +70,10 @@ trait Context {
     }
     val getMonth = udf(TimeSplitM)
     val getHour = udf(TimeSplitH)
+    val getLog = udf(Time2Log)
     frame.withColumn("Month",getMonth(frame("Time")))
       .withColumn("Hour",getHour(frame("Time")))
+      .withColumn("Timestamp",getLog(frame("Time")))
   }
 }
 
