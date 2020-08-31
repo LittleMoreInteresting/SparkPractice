@@ -42,5 +42,5 @@ object WindPowerApp extends App with Context{
   //结果展示
   println (" Cluster  Centers :")
   model.clusterCenters.foreach(println)
-  results.collect().foreach(println)
+  results.write.mode("overwrite").csv("result.csv")
 }
