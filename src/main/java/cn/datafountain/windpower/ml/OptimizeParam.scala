@@ -1,22 +1,19 @@
 package cn.datafountain.windpower.ml
 
 import cn.datafountain.windpower.common.Context
+import cn.datafountain.windpower.ml.WindPowerApp.{getParams, loadData}
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.ml.feature.{OneHotEncoder, StandardScaler, VectorAssembler}
 import org.apache.spark.sql.DataFrame
 
-object WindPowerApp extends App with Context{
+object OptimizeParam extends App with Context{
   private val trainData: DataFrame = loadData()
   private val params: DataFrame = getParams()
   private val frame: DataFrame = trainData.join(params, "WindNumber")
-  trainData.show(3)
-  frame.show(3)
-  //frame.printSchema()
-  //sys.exit(0)
-//"WindNumber","Time","WindSpeed","Power","RotorSpeed","Month","Hour","wd","p","in","out","minSp","maxSp"
   //类别型字段转换
-  private val encoder1: OneHotEncoder = new OneHotEncoder().setInputCol("Month").setOutputCol("MonthVector").setDropLast(false)
+  //private val encoder1: OneHotEncoder = new OneHotEncoder().setInputCol("Year").setOutputCol("YearVector").setDropLast(false)
+  //private val encoder2: OneHotEncoder = new OneHotEncoder().setInputCol("Month").setOutputCol("MonthVector").setDropLast(false)
 
   //组合特征向量
   val featuresArray = Array("WindSpeed","Power","RotorSpeed","wd","in","out","minSp","maxSp")
@@ -28,7 +25,7 @@ object WindPowerApp extends App with Context{
   //Pipeline 组装
   var kMeans = new KMeans().setFeaturesCol("scaledFeatures").setK(24).setSeed(123456789)
 
-  private val pipeline: Pipeline = new Pipeline().setStages(Array(encoder1,vecDF, scalaDF))
+  private val pipeline: Pipeline = new Pipeline().setStages(Array(vecDF, scalaDF))
   private val data2: DataFrame = pipeline.fit(frame).transform(frame)
   val model = kMeans.fit(data2)
   val results = model.transform(data2)
@@ -38,8 +35,8 @@ object WindPowerApp extends App with Context{
   println(s"Within  Set  Sum  of  Squared  Errors=  $WSSSE")
 
   //结果展示
-  println (" Cluster  Centers :")
-  model.clusterCenters.foreach(println)
+  //println (" Cluster  Centers :")
+  //model.clusterCenters.foreach(println)
   //results.printSchema()
   results.show(3)
   results.select("WindNumber","prediction").groupBy("prediction").count().show(50)

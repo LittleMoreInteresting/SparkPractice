@@ -33,9 +33,13 @@ trait Context {
     frame1.select(
       frame1.col("WindNumber").cast("integer"),
       frame1.col("Timestamp").cast("Long"),
+      frame1.col("Time").cast("String"),
       frame1.col("WindSpeed").cast("Double"),
       frame1.col("Power").cast("Double"),
-      frame1.col("RotorSpeed").cast("Double")
+      frame1.col("RotorSpeed").cast("Double"),
+      frame1.col("Month").cast("integer"),
+      frame1.col("Hour").cast("integer"),
+      frame1.col("Year").cast("integer")
     )
   }
 
@@ -60,6 +64,10 @@ trait Context {
     val Time2Log = (arg: String) => {
      new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(arg).getTime
     }
+    val TimeSplitY  = (arg: String) => {
+      val newTime :Long= new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(arg).getTime
+      new SimpleDateFormat("yyyy").format(newTime)
+    }
     val TimeSplitM  = (arg: String) => {
       val newTime :Long= new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(arg).getTime
       new SimpleDateFormat("MM").format(newTime)
@@ -68,12 +76,14 @@ trait Context {
       val newTime :Long= new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(arg).getTime
       new SimpleDateFormat("HH").format(newTime)
     }
+    val getYear = udf(TimeSplitY)
     val getMonth = udf(TimeSplitM)
     val getHour = udf(TimeSplitH)
     val getLog = udf(Time2Log)
     frame.withColumn("Month",getMonth(frame("Time")))
       .withColumn("Hour",getHour(frame("Time")))
       .withColumn("Timestamp",getLog(frame("Time")))
+      .withColumn("Year",getYear(frame("Time")))
   }
 }
 
