@@ -23,7 +23,7 @@ object OptimizeParam extends App with Context{
   val scalaDF = new StandardScaler().setInputCol("features").setOutputCol("scaledFeatures")
     .setWithStd(true).setWithMean(false)
   //Pipeline 组装
-  var kMeans = new KMeans().setFeaturesCol("scaledFeatures").setK(24).setSeed(123456789)
+  var kMeans = new KMeans().setFeaturesCol("scaledFeatures").setK(28).setSeed(123456789)
 
   private val pipeline: Pipeline = new Pipeline().setStages(Array(vecDF, scalaDF))
   private val data2: DataFrame = pipeline.fit(frame).transform(frame)
