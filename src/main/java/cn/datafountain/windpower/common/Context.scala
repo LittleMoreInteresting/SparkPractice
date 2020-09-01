@@ -56,30 +56,7 @@ trait Context {
     )
   }
 
-  def addColumns(frame:DataFrame): DataFrame ={
-    val Time2Log = (arg: String) => {
-     new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(arg).getTime
-    }
-    val TimeSplitY  = (arg: String) => {
-      val newTime :Long= new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(arg).getTime
-      new SimpleDateFormat("yyyy").format(newTime)
-    }
-    val TimeSplitM  = (arg: String) => {
-      val newTime :Long= new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(arg).getTime
-      new SimpleDateFormat("MM").format(newTime)
-    }
-    val TimeSplitH  = (arg: String) => {
-      val newTime :Long= new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(arg).getTime
-      new SimpleDateFormat("HH").format(newTime)
-    }
-    val getYear = udf(TimeSplitY)
-    val getMonth = udf(TimeSplitM)
-    val getHour = udf(TimeSplitH)
-    val getLog = udf(Time2Log)
-    frame.withColumn("Month",getMonth(frame("Time")))
-      .withColumn("Hour",getHour(frame("Time")))
-      .withColumn("Timestamp",getLog(frame("Time")))
-      .withColumn("Year",getYear(frame("Time")))
-  }
 }
+
+
 

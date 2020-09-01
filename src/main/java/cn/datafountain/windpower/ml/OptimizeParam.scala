@@ -19,13 +19,13 @@ case class WindParams(
                        maxSp: Double
                      )
 case class WindParams2(
-                       WindNumber:Int,
-                       Time: String,
-                       WindSpeed: Double,
-                       Power: Double,
-                       RotorSpeed: Double,
-                       spType: Int
-                     )
+                        WindNumber:Int,
+                        Time: String,
+                        WindSpeed: Double,
+                        Power: Double,
+                        RotorSpeed: Double,
+                        spType: Int
+                      )
 object OptimizeParam extends App with  Context{
 
   val trainData: DataFrame = loadData()
@@ -55,7 +55,7 @@ object OptimizeParam extends App with  Context{
   val scalaDF = new StandardScaler().setInputCol("features").setOutputCol("scaledFeatures")
     .setWithStd(true).setWithMean(false)
   //Pipeline 组装
-  var kMeans = new KMeans().setFeaturesCol("scaledFeatures").setK(40).setSeed(123456789)
+  var kMeans = new KMeans().setFeaturesCol("scaledFeatures").setK(70).setSeed(123456789)
 
   private val pipeline: Pipeline = new Pipeline().setStages(Array(vecDF, scalaDF))
   private val data2: DataFrame = pipeline.fit(dataTrain).transform(dataTrain)
@@ -73,5 +73,5 @@ object OptimizeParam extends App with  Context{
   results.show(3)
   results.select("WindNumber","prediction")
     .where("WindNumber=1")
-    .groupBy("prediction").count().show(50)
+    .groupBy("prediction").count().show()
 }
