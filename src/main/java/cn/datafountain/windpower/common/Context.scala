@@ -23,23 +23,19 @@ trait Context {
 
 
   def loadData():DataFrame ={
-    val frame = sparkSession.read
+    val frame1 = sparkSession.read
       .option("header", "true")
       .option("innerSchema", "true")
       .csv(trainingDataFile)
       .toDF("WindNumber", "Time", "WindSpeed", "Power", "RotorSpeed")
       .cache()
-    val frame1 = addColumns(frame)
+
     frame1.select(
       frame1.col("WindNumber").cast("integer"),
-      frame1.col("Timestamp").cast("Long"),
       frame1.col("Time").cast("String"),
       frame1.col("WindSpeed").cast("Double"),
       frame1.col("Power").cast("Double"),
-      frame1.col("RotorSpeed").cast("Double"),
-      frame1.col("Month").cast("integer"),
-      frame1.col("Hour").cast("integer"),
-      frame1.col("Year").cast("integer")
+      frame1.col("RotorSpeed").cast("Double")
     )
   }
 
