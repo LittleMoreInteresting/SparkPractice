@@ -2,7 +2,7 @@ package cn.datafountain.windpower.ml
 
 import cn.datafountain.windpower.common.Context
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.clustering.KMeans
+import org.apache.spark.ml.clustering.BisectingKMeans
 import org.apache.spark.ml.feature.{OneHotEncoder, StandardScaler, VectorAssembler}
 import org.apache.spark.sql.DataFrame
 case class WindParams(
@@ -55,15 +55,34 @@ object OptimizeParam extends App with  Context{
   val scalaDF = new StandardScaler().setInputCol("features").setOutputCol("scaledFeatures")
     .setWithStd(true).setWithMean(false)
   //Pipeline 组装
-  var kMeans = new KMeans().setFeaturesCol("scaledFeatures").setK(70).setSeed(123456789)
+  //var kMeans = new KMeans().setFeaturesCol("scaledFeatures").setK(70).setSeed(123456789)
 
-  private val pipeline: Pipeline = new Pipeline().setStages(Array(vecDF, scalaDF))
+  private val pipeline: Pipeline = new Pipeline().setStages(Array(encoder1,vecDF, scalaDF))
   private val data2: DataFrame = pipeline.fit(dataTrain).transform(dataTrain)
+  val kMeans = new BisectingKMeans().setFeaturesCol("scaledFeatures").setK(48).setSeed(123456789)
   val model = kMeans.fit(data2)
-  val results = model.transform(data2)
+  val WSSSE: Double = model.computeCost(data2)
+  println(s"Within  Set  Sum  of  Squared  Errors=  $WSSSE")
 
+  /*val KSSE = (10 to 100 by 2).toList.map{
+    k =>
+      val kMeans = new KMeans().setFeaturesCol("scaledFeatures").setK(k).setSeed(123456789)
+      val model = kMeans.fit(data2)
+      //val results = model.transform(data2)
+      val WSSSE: Double = model.computeCost(data2)
+      (k,WSSSE)
+  }
+  KSSE.sortBy(_._1).foreach(println)*/
+  /* 高斯
+  val mixture = new GaussianMixture().setK(2).setFeaturesCol("scaledFeatures")
+  val model = mixture.fit(data2)
+  val gaussData: DataFrame = model.transform(data2)
+  gaussData.show(3)
+  gaussData.select("WindNumber","prediction")
+    .where("WindNumber=1")
+    .groupBy("prediction").count().show()*/
   //评估模型
-  private val WSSSE: Double = model.computeCost(data2)
+  /*private
   println(s"Within  Set  Sum  of  Squared  Errors=  $WSSSE")
 
   //结果展示
@@ -73,5 +92,5 @@ object OptimizeParam extends App with  Context{
   results.show(3)
   results.select("WindNumber","prediction")
     .where("WindNumber=1")
-    .groupBy("prediction").count().show()
+    .groupBy("prediction").count().show()*/
 }

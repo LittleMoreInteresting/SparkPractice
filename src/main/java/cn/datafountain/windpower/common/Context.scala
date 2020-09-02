@@ -1,8 +1,5 @@
 package cn.datafountain.windpower.common
 
-import java.text.SimpleDateFormat
-
-import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 trait Context {
