@@ -2,21 +2,16 @@ package cn.datafountain.windpower.ml
 
 import cn.datafountain.windpower.common.Context
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.clustering.BisectingKMeans
-import org.apache.spark.ml.feature.{OneHotEncoder, StandardScaler, VectorAssembler}
+import org.apache.spark.ml.clustering.{BisectingKMeans, BisectingKMeansModel, BisectingKMeansSummary, KMeans}
+import org.apache.spark.ml.feature.{StandardScaler, VectorAssembler}
+import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.sql.DataFrame
 case class WindParams(
                        WindNumber:Int,
                        Time: String,
                        WindSpeed: Double,
                        Power: Double,
-                       RotorSpeed: Double,
-                       wd: Double,
-                       p: Double,
-                       in: Double,
-                       out: Double,
-                       minSp: Double,
-                       maxSp: Double
+                       RotorSpeed: Double
                      )
 case class WindParams2(
                         WindNumber:Int,
@@ -29,26 +24,13 @@ case class WindParams2(
 object OptimizeParam extends App with  Context{
 
   val trainData: DataFrame = loadData()
-  val params: DataFrame = getParams()
-  val frame: DataFrame = trainData.join(params, "WindNumber")
-  import sparkSession.implicits._
-  val dataTrain = frame.as[WindParams].map {
-    x => {
-      var spType = 0
-      if (x.RotorSpeed >= x.minSp && x.RotorSpeed <= x.maxSp) {
-        spType = 1
-      }
-      WindParams2(x.WindNumber, x.Time, x.WindSpeed, x.Power, x.RotorSpeed, spType)
-    }
-  }.toDF()
 
 
   //类别型字段转换
-  private val encoder1: OneHotEncoder = new OneHotEncoder().setInputCol("spType").setOutputCol("spTypeVector").setDropLast(false)
-  //private val encoder2: OneHotEncoder = new OneHotEncoder().setInputCol("Month").setOutputCol("MonthVector").setDropLast(false)
+  //private val encoder1: OneHotEncoder = new OneHotEncoder().setInputCol("spType").setOutputCol("spTypeVector").setDropLast(false)
 
   //组合特征向量
-  val featuresArray = Array("WindSpeed","Power","RotorSpeed","spType")
+  val featuresArray = Array("WindSpeed","Power","RotorSpeed")
   val vecDF = new VectorAssembler().setInputCols(featuresArray).setOutputCol("features")
 
   //规范化
@@ -57,40 +39,30 @@ object OptimizeParam extends App with  Context{
   //Pipeline 组装
   //var kMeans = new KMeans().setFeaturesCol("scaledFeatures").setK(70).setSeed(123456789)
 
-  private val pipeline: Pipeline = new Pipeline().setStages(Array(encoder1,vecDF, scalaDF))
-  private val data2: DataFrame = pipeline.fit(dataTrain).transform(dataTrain)
-  val kMeans = new BisectingKMeans().setFeaturesCol("scaledFeatures").setK(48).setSeed(123456789)
+  private val pipeline: Pipeline = new Pipeline().setStages(Array(vecDF, scalaDF))
+  private val data2: DataFrame = pipeline.fit(trainData).transform(trainData)
+  /*val kMeans = new BisectingKMeans().setFeaturesCol("scaledFeatures").setK(48).setSeed(123456789)
   val model = kMeans.fit(data2)
   val WSSSE: Double = model.computeCost(data2)
-  println(s"Within  Set  Sum  of  Squared  Errors=  $WSSSE")
+  println(s"Within  Set  Sum  of  Squared  Errors=  $WSSSE")*/
 
-  /*val KSSE = (10 to 100 by 2).toList.map{
+  val KSSE = (30 to 60 by 2).toList.map{
     k =>
-      val kMeans = new KMeans().setFeaturesCol("scaledFeatures").setK(k).setSeed(123456789)
-      val model = kMeans.fit(data2)
-      //val results = model.transform(data2)
+      val biKMeans = new BisectingKMeans().setFeaturesCol("scaledFeatures").setK(k).setSeed(123456789)
+      val model = biKMeans.fit(data2)
       val WSSSE: Double = model.computeCost(data2)
+      /*val centers = model.clusterCenters
+      val d = Vectors.sqdist(centers(0), centers(1))
+      println()
+      println(d)*/
       (k,WSSSE)
   }
-  KSSE.sortBy(_._1).foreach(println)*/
-  /* 高斯
-  val mixture = new GaussianMixture().setK(2).setFeaturesCol("scaledFeatures")
-  val model = mixture.fit(data2)
-  val gaussData: DataFrame = model.transform(data2)
-  gaussData.show(3)
-  gaussData.select("WindNumber","prediction")
-    .where("WindNumber=1")
-    .groupBy("prediction").count().show()*/
-  //评估模型
-  /*private
-  println(s"Within  Set  Sum  of  Squared  Errors=  $WSSSE")
+  KSSE.sortBy(_._1).foreach(println)
 
-  //结果展示
-  //println (" Cluster  Centers :")
-  //model.clusterCenters.foreach(println)
-  //results.printSchema()
-  results.show(3)
-  results.select("WindNumber","prediction")
-    .where("WindNumber=1")
-    .groupBy("prediction").count().show()*/
+  // K select 48
+
+
+  // TODO 1 Top size  cluster 最大簇 中心
+  // TODO 2 sqdist/size 每个簇到最大簇中心的距离平方比本簇大小 -> 系数平均值 avg
+  // TODO 2 系数< avg*(0.4) 标记为 1 异常数
 }

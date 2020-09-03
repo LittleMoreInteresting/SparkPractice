@@ -33,7 +33,7 @@ trait Context {
       frame1.col("WindSpeed").cast("Double"),
       frame1.col("Power").cast("Double"),
       frame1.col("RotorSpeed").cast("Double")
-    )
+    ).cache()
   }
 
   def getParams():DataFrame = {
