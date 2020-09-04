@@ -1,12 +1,14 @@
 package cn.datafountain.windpower.ml
 
+import java.util
+
 import breeze.numerics.log10
 import cn.datafountain.windpower.common.{Context, WindResult, WindResultOut}
 import org.apache.spark.ml.clustering.BisectingKMeans
 import org.apache.spark.ml.feature.{StandardScaler, VectorAssembler}
 import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.ml.{Pipeline, linalg}
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, RelationalGroupedDataset, Row}
 
 import scala.collection.mutable
 import scala.collection.mutable.Set
@@ -14,6 +16,15 @@ import scala.collection.mutable.Set
 object WindPowerApp extends App with Context{
 
   val trainData: DataFrame = loadData()
+  val rows = trainData.select("WindNumber")
+    .distinct().orderBy("WindNumber").collect()
+  rows.foreach(x=> {
+    val n = x(0)
+    val value = trainData.filter(s"WindNumber=$n")
+    value.show(1)
+  })
+
+  sys.exit()
   val featuresArray = Array("WindSpeed","Power","RotorSpeed")
   val vecDF = new VectorAssembler().setInputCols(featuresArray).setOutputCol("features")
   val k = 48
