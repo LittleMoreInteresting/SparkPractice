@@ -56,6 +56,16 @@ class DataLoad {
     dataTrain
   }
 }
+case class WindResult(
+                       WindNumber:Int,
+                       Time: String,
+                       prediction:Int
+                     )
+case class WindResultOut(
+                       WindNumber:Int,
+                       Time: String,
+                       label:Int
+                     )
 case class WindParams(
                        WindNumber:Int,
                        Time: String,
