@@ -49,7 +49,7 @@ object WindPowerApp extends App with Context{
   val errorCluster:mutable.Set[Int] = mutable.Set()
   for (cluster <- clusterDistFactor.indices
        if cluster != maxSizeCluster
-       if clusterDistFactor(cluster)< avgFactor*0.8
+       if clusterDistFactor(cluster)< avgFactor
        ) {
     errorCluster.add(cluster)
     println(s"Error Cluster：$cluster ;Factor:"+clusterDistFactor(cluster))
