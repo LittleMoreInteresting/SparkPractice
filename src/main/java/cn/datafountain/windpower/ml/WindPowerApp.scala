@@ -56,10 +56,11 @@ object WindPowerApp extends App with Context{
   }
   val avgFactor = clusterDistFactor.sum/clusterDistFactor.length;
   println("maxSizeCluster="+avgFactor)
+  val errorProportion = 1.2; // 错误笔录 1.2->0.70278337
   val errorCluster:mutable.Set[Int] = mutable.Set()
   for (cluster <- clusterDistFactor.indices
        if cluster != maxSizeCluster
-       if clusterDistFactor(cluster)< avgFactor*1.2
+       if clusterDistFactor(cluster)< avgFactor*errorProportion
        ) {
     errorCluster.add(cluster)
     println(s"Error Cluster：$cluster ;Factor:"+clusterDistFactor(cluster))
