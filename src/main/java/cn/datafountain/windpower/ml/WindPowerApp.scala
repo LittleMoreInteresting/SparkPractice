@@ -16,15 +16,14 @@ import scala.collection.mutable.Set
 object WindPowerApp extends App with Context{
 
   val trainData: DataFrame = loadData()
-  val rows = trainData.select("WindNumber")
+/*  val rows = trainData.select("WindNumber")
     .distinct().orderBy("WindNumber").collect()
   rows.foreach(x=> {
     val n = x(0)
     val value = trainData.filter(s"WindNumber=$n")
     value.show(1)
   })
-
-  sys.exit()
+  sys.exit()*/
   val featuresArray = Array("WindSpeed","Power","RotorSpeed")
   val vecDF = new VectorAssembler().setInputCols(featuresArray).setOutputCol("features")
   val k = 48
@@ -60,7 +59,7 @@ object WindPowerApp extends App with Context{
   val errorCluster:mutable.Set[Int] = mutable.Set()
   for (cluster <- clusterDistFactor.indices
        if cluster != maxSizeCluster
-       if clusterDistFactor(cluster)< avgFactor
+       if clusterDistFactor(cluster)< avgFactor*1.2
        ) {
     errorCluster.add(cluster)
     println(s"Error Cluster：$cluster ;Factor:"+clusterDistFactor(cluster))
