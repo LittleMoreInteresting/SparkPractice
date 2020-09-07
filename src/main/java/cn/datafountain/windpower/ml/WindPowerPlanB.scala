@@ -2,11 +2,10 @@ package cn.datafountain.windpower.ml
 
 import breeze.numerics.log10
 import cn.datafountain.windpower.common.{Context, WindResult, WindResultOut}
-import cn.datafountain.windpower.ml.WindPowerApp.{sparkSession, trainData}
-import org.apache.spark.ml.{Pipeline, linalg}
 import org.apache.spark.ml.clustering.BisectingKMeans
 import org.apache.spark.ml.feature.{StandardScaler, VectorAssembler}
 import org.apache.spark.ml.linalg.Vectors
+import org.apache.spark.ml.{Pipeline, linalg}
 import org.apache.spark.sql.DataFrame
 
 import scala.collection.mutable
@@ -71,7 +70,7 @@ object WindPowerPlanB extends App with Context{
           WindResultOut(result.WindNumber,result.Time,label)
         })
         .write
-        .mode("append")
-        .csv("result.csv")
+        .mode("overwrite")
+        .csv(s"result_$n")
     })
 }
