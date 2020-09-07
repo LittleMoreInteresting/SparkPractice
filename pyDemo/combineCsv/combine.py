@@ -1,8 +1,7 @@
 import time
 import os
 inputPath = "E:/myPractice/result.csv/"
-outputFile = "sub_" + time.strftime("%Y-%m-%d-%H", time.localtime()) + ".csv"
-print(outputFile)
+outputFile = "sub_" + time.strftime("%Y-%m-%d-%H-%M", time.localtime()) + ".csv"
 fpOut = open(outputFile, "w")
 fpOut.writelines(["WindNumber,Time,label\n"])
 dirList = os.listdir(inputPath)
