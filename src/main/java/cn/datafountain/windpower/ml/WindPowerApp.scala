@@ -13,6 +13,13 @@ import org.apache.spark.sql.{DataFrame, RelationalGroupedDataset, Row}
 import scala.collection.mutable
 import scala.collection.mutable.Set
 
+/**
+ * K -> 48
+ * 选择size 最大分区 中心坐标 center0
+ * 其他分区 根据 该分区中心到 center0 的距离平方d1 和分区大小s1 构建系数 f1 = log10(s1/d1)
+ * 根据平均系数 avg 与 f1 之间的关系进行 正常、异常数据区分。比如 f1>avg*1.2 ->正常
+ * 最高 0.7
+ */
 object WindPowerApp extends App with Context{
 
   val trainData: DataFrame = loadData()

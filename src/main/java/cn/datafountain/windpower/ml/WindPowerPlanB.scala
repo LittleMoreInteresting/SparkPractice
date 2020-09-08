@@ -10,6 +10,9 @@ import org.apache.spark.sql.DataFrame
 
 import scala.collection.mutable
 
+/**
+ * 按 分机号分类数据，分别进行聚类算法 结果一般…… 最高 0.5
+ */
 object WindPowerPlanB extends App with Context{
   val trainData: DataFrame = loadData()
     val rows = trainData.select("WindNumber")
@@ -21,7 +24,7 @@ object WindPowerPlanB extends App with Context{
 
       val featuresArray = Array("WindSpeed","Power","RotorSpeed")
       val vecDF = new VectorAssembler().setInputCols(featuresArray).setOutputCol("features")
-      val k = 10
+      val k = 12
       //规范化
       val scalaDF = new StandardScaler().setInputCol("features").setOutputCol("scaledFeatures")
         .setWithStd(true).setWithMean(false)
@@ -52,7 +55,7 @@ object WindPowerPlanB extends App with Context{
       }
       val avgFactor = clusterDistFactor.sum/clusterDistFactor.length;
       println("maxSizeCluster avgFactor ="+avgFactor)
-      val errorProportion = 1; // 错误比例1->0.29532939814  1.2->0.70278337  1.3->0.69500249943   1.5 -> 0.66424782047
+      val errorProportion = 1.2; // 错误比例1->0.24402718054   1.2->0.52607767435 0.54249008814   1.3->    1.5 ->
       val errorCluster:mutable.Set[Int] = mutable.Set()
       for (cluster <- clusterDistFactor.indices
            if cluster != maxSizeCluster
