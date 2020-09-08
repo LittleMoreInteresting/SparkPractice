@@ -1,17 +1,14 @@
 package cn.datafountain.windpower.ml
 
-import java.util
-
 import breeze.numerics.log10
 import cn.datafountain.windpower.common.{Context, WindResult, WindResultOut}
 import org.apache.spark.ml.clustering.BisectingKMeans
 import org.apache.spark.ml.feature.{StandardScaler, VectorAssembler}
 import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.ml.{Pipeline, linalg}
-import org.apache.spark.sql.{DataFrame, RelationalGroupedDataset, Row}
+import org.apache.spark.sql.DataFrame
 
 import scala.collection.mutable
-import scala.collection.mutable.Set
 
 /**
  * K -> 48
@@ -19,19 +16,12 @@ import scala.collection.mutable.Set
  * 其他分区 根据 该分区中心到 center0 的距离平方d1 和分区大小s1 构建系数 f1 = log10(s1/d1)
  * 根据平均系数 avg 与 f1 之间的关系进行 正常、异常数据区分。比如 f1>avg*1.2 ->正常
  * 最高 0.7
+ * 2020.09.08 调整 异常数据判定规则
  *
  */
-object WindPowerApp extends App with Context{
+object WindPowerPlanC extends App with Context{
 
   val trainData: DataFrame = loadData()
-/*  val rows = trainData.select("WindNumber")
-    .distinct().orderBy("WindNumber").collect()
-  rows.foreach(x=> {
-    val n = x(0)
-    val value = trainData.filter(s"WindNumber=$n")
-    value.show(1)
-  })
-  sys.exit()*/
   val featuresArray = Array("WindSpeed","Power","RotorSpeed")
   val vecDF = new VectorAssembler().setInputCols(featuresArray).setOutputCol("features")
   val k = 48
@@ -53,18 +43,18 @@ object WindPowerApp extends App with Context{
     maxSize = clusterSizes(i)
     maxSizeCluster = i
   }
+  println("maxSizeCluster="+maxSizeCluster+"size="+maxSize)
   var clusterDistFactor = new Array[Double](k)
   for (i <- clusterSizes.indices
       if i != maxSizeCluster
        ) {
     val sqDist = Vectors.sqdist(centers(maxSizeCluster),centers(i))
-    clusterDistFactor(i) = log10(clusterSizes(i)/sqDist)
-
-    println(s"i=$i;size="+clusterSizes(i)+";dist:"+sqDist+";Factor:"+clusterDistFactor(i))
+    clusterDistFactor(i) = sqDist
+    println(s"i=$i;size="+clusterSizes(i)+";dist:"+sqDist)
   }
   val avgFactor = clusterDistFactor.sum/clusterDistFactor.length;
-  println("maxSizeCluster="+avgFactor)
-  val errorProportion = 1; // 错误比例1->0.29532939814  1.2->0.70278337  1.3->0.69500249943   1.5 -> 0.66424782047
+  println("avgFactor="+avgFactor)
+  val errorProportion = 1; // 错误比例
   val errorCluster:mutable.Set[Int] = mutable.Set()
   for (cluster <- clusterDistFactor.indices
        if cluster != maxSizeCluster
@@ -83,6 +73,6 @@ object WindPowerApp extends App with Context{
     })
     .write
     .mode("overwrite")
-    .csv("result.csv")
+    .csv("result_1.csv")
 
 }
