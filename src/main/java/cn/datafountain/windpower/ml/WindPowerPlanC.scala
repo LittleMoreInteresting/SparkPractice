@@ -11,7 +11,10 @@ import org.apache.spark.sql.DataFrame
 import scala.collection.mutable
 
 /**
- * 按 分机号分类数据，分别进行聚类算法 结果一般…… 最高 0.5
+ * 按 分机号分类数据，分别进行聚类算法
+ * 2020年9月9日 dist>0.5 avg ->1 = 0.48411264696
+ * 2020年9月9日 dist>0.4 avg ->1 = 0.50008432624
+ * 2020年9月10日 dist>0.3 avg ->1 = 0.50008432624
  */
 object WindPowerPlanC extends App with Context{
   val trainData: DataFrame = loadData()
@@ -55,7 +58,7 @@ object WindPowerPlanC extends App with Context{
     }
     val avgFactor = clusterDistFactor.sum/clusterDistFactor.length;
     println("maxSizeCluster avgFactor ="+avgFactor)
-    val errorProportion = 0.8; // 错误比例1
+    val errorProportion = 0.4; // 错误比例1
     val errorCluster:mutable.Set[Int] = mutable.Set()
     for (cluster <- clusterDistFactor.indices
          if cluster != maxSizeCluster
