@@ -21,6 +21,7 @@ object WindPowerPlanC extends App with Context{
   val rows = trainData.select("WindNumber")
     .distinct().orderBy("WindNumber").collect()
   rows.foreach(x=> {
+
     val n = x(0)
     val trainDataOne = trainData.filter(s"WindNumber=$n").toDF()
     println(s"WindNumber:$n")
