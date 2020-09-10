@@ -15,7 +15,7 @@ import scala.collection.mutable
  * 2020年9月9日 dist>0.5*avg ->1 = 0.48411264696
  * 2020年9月9日 dist>0.4*avg ->1 = 0.50008432624
  * 2020年9月10日 dist>0.3*avg ->1 = 0.51166593280
- * 2020年9月10日 dist>0.2*avg ->1 = 0.51166593280
+ * 2020年9月10日 dist>0.2*avg ->1 = 0.52840039505
  */
 object WindPowerPlanC extends App with Context{
   val trainData: DataFrame = loadData()
