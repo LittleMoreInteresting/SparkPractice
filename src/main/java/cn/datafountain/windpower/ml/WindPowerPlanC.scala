@@ -12,16 +12,17 @@ import scala.collection.mutable
 
 /**
  * 按 分机号分类数据，分别进行聚类算法
- * 2020年9月9日 dist>0.5 avg ->1 = 0.48411264696
- * 2020年9月9日 dist>0.4 avg ->1 = 0.50008432624
- * 2020年9月10日 dist>0.3 avg ->1 = 0.50008432624
+ * 2020年9月9日 dist>0.5*avg ->1 = 0.48411264696
+ * 2020年9月9日 dist>0.4*avg ->1 = 0.50008432624
+ * 2020年9月10日 dist>0.3*avg ->1 = 0.51166593280
+ * 2020年9月10日 dist>0.2*avg ->1 = 0.51166593280
  */
 object WindPowerPlanC extends App with Context{
   val trainData: DataFrame = loadData()
   val rows = trainData.select("WindNumber")
     .distinct().orderBy("WindNumber").collect()
   rows.foreach(x=> {
-
+    val errorProportion = 0.2; // 错误比例1
     val n = x(0)
     val trainDataOne = trainData.filter(s"WindNumber=$n").toDF()
     println(s"WindNumber:$n")
@@ -59,15 +60,18 @@ object WindPowerPlanC extends App with Context{
     }
     val avgFactor = clusterDistFactor.sum/clusterDistFactor.length;
     println("maxSizeCluster avgFactor ="+avgFactor)
-    val errorProportion = 0.4; // 错误比例1
+
     val errorCluster:mutable.Set[Int] = mutable.Set()
+    var errorCount:Long = 0
     for (cluster <- clusterDistFactor.indices
          if cluster != maxSizeCluster
          if clusterDistFactor(cluster)> avgFactor*errorProportion
          ) {
       errorCluster.add(cluster)
+      errorCount = errorCount+clusterSizes(cluster)
       println(s"Error Cluster：$cluster ;Factor:"+clusterDistFactor(cluster)+"size="+clusterSizes(cluster))
     }
+    println(s"Error Count：$errorCount")
     val resultDF: DataFrame = model.transform(data2)
     import sparkSession.implicits._
     resultDF.select("WindNumber","Time",model.getPredictionCol)
