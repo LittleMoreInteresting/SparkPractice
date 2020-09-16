@@ -6,6 +6,7 @@ import org.apache.spark.sql.DataFrame
 
 object OptimizeK extends App with Context{
   val trainData: DataFrame = loadData()
+
   val rows = trainData.select("WindNumber")
     .distinct().orderBy("WindNumber").collect()
   rows.foreach(x=> {
@@ -13,7 +14,7 @@ object OptimizeK extends App with Context{
     val trainDataOne = trainData.filter(s"WindNumber=$n").toDF()
 
     println(s"WindNumber:$n")
-    OptimizeParam.OptimizeK(trainDataOne,10,20,2)
+    OptimizeParam.OptimizeK(trainDataOne,4,20,2)
 
   })
 }

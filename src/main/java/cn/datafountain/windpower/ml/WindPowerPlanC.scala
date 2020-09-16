@@ -29,7 +29,7 @@ object WindPowerPlanC extends App with Context{
 
     val featuresArray = Array("WindSpeed","Power","RotorSpeed")
     val vecDF = new VectorAssembler().setInputCols(featuresArray).setOutputCol("features")
-    val k = 12
+    val k = 16
     //规范化
     val scalaDF = new StandardScaler().setInputCol("features").setOutputCol("scaledFeatures")
       .setWithStd(true).setWithMean(false)
